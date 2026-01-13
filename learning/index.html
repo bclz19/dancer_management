@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>C++ 前后端对接测试</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 20px;
+      }
+      .box {
+        border: 1px solid #ccc;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+      }
+      button {
+        cursor: pointer;
+        padding: 5px 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>前后端对接演示</h1>
+
+    <!-- 区域 1: 测试 GET -->
+    <div class="box">
+      <h3>1. 获取后端数据 (GET)</h3>
+      <p>点击按钮从 C++ 获取问候：</p>
+      <button onclick="getGreeting()">获取消息</button>
+      <p id="output-get" style="color: blue; font-weight: bold">
+        (等待数据...)
+      </p>
+    </div>
+
+    <!-- 区域 2: 测试 POST -->
+    <div class="box">
+      <h3>2. 发送数据给后端 (POST)</h3>
+      <input type="text" id="username" placeholder="输入名字" />
+      <button onclick="sendUser()">发送名字</button>
+      <p id="output-post" style="color: green">(状态区)</p>
+    </div>
+
+    <script>
+      const API_URL = "http://localhost:8083";
+
+      // --- 功能 1: GET 请求 ---
+      async function getGreeting() {
+        try {
+          // 使用 fetch 发起网络请求
+          const response = await fetch(API_URL + "/hi");
+
+          // 将响应文本转换为 JS 对象
+          const data = await response.json();
+
+          // 更新网页显示
+          document.getElementById("output-get").innerText = data.message;
+        } catch (error) {
+          console.error("连接失败:", error);
+          document.getElementById("output-get").innerText =
+            "连接后端失败，请确认 C++ 程序在运行";
+        }
+      }
+
+      // --- 功能 2: POST 请求 ---
+      async function sendUser() {
+        const nameStr = document.getElementById("username").value;
+
+        // 构造要发送的 JS 对象
+        const payload = { name: nameStr };
+
+        try {
+          const response = await fetch(API_URL + "/add", {
+            method: "POST", // 指定动作
+            headers: {
+              "Content-Type": "application/json", // 告诉后端我发的是 JSON
+            },
+            body: JSON.stringify(payload), // 把 JS 对象转成字符串发送
+          });
+
+          const result = await response.json();
+          document.getElementById("output-post").innerText =
+            "后端回复: " + result.result;
+        } catch (error) {
+          console.error("发送失败:", error);
+        }
+      }
+    </script>
+  </body>
+</html>
